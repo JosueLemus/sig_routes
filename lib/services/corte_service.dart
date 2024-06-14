@@ -1,5 +1,7 @@
 import 'package:http/http.dart' as http;
 import 'package:xml/xml.dart' as xml;
+import '../models/corte.dart';
+import '../models/route.dart';
 
 class CorteService {
   final String soapEndpoint = 'http://190.171.244.211:8080/wsVarios/wsBS.asmx';
@@ -29,8 +31,8 @@ class CorteService {
     }
   }
 
-  Future<List<Ruta>> fetchRutas() async {
-    const String soapRequestRutas = '''<?xml version="1.0" encoding="utf-8"?>
+  Future<List<RouteModel>> fetchRoutes() async {
+    const String soapRequestRoutes = '''<?xml version="1.0" encoding="utf-8"?>
 <soap12:Envelope xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xmlns:xsd="http://www.w3.org/2001/XMLSchema" xmlns:soap12="http://www.w3.org/2003/05/soap-envelope">
   <soap12:Body>
     <W0Corte_ObtenerRutas xmlns="http://activebs.net/">
@@ -42,11 +44,11 @@ class CorteService {
     final response = await http.post(
       Uri.parse(soapEndpoint),
       headers: {'Content-Type': 'application/soap+xml; charset=utf-8'},
-      body: soapRequestRutas,
+      body: soapRequestRoutes,
     );
 
     if (response.statusCode == 200) {
-      return parseRutas(response.body);
+      return parseRoutes(response.body);
     } else {
       throw Exception('Failed to load data: ${response.reasonPhrase}');
     }
@@ -57,120 +59,50 @@ class CorteService {
     final tables = document.findAllElements('Table');
     return tables.map((element) {
       return Corte(
-        bscocNcoc:
-            int.tryParse(element.findElements('bscocNcoc').first.text) ?? 0,
-        bscntCodf:
+        code: int.tryParse(element.findElements('bscocNcoc').first.text) ?? 0,
+        fixedCode:
             int.tryParse(element.findElements('bscntCodf').first.text) ?? 0,
-        bscocNcnt:
-            int.tryParse(element.findElements('bscocNcnt').first.text) ?? 0,
-        dNomb: element.findElements('dNomb').first.text,
-        bscocNmor:
+        count: int.tryParse(element.findElements('bscocNcnt').first.text) ?? 0,
+        name: element.findElements('dNomb').first.text,
+        morCount:
             int.tryParse(element.findElements('bscocNmor').first.text) ?? 0,
-        bscocImor:
+        morAmount:
             double.tryParse(element.findElements('bscocImor').first.text) ??
                 0.0,
-        bsmednser: element.findElements('bsmednser').first.text,
-        bsmedNume: element.findElements('bsmedNume').first.text,
-        bscntlati:
+        service: element.findElements('bsmednser').first.text,
+        serviceNumber: element.findElements('bsmedNume').first.text,
+        latitude:
             double.tryParse(element.findElements('bscntlati').first.text) ??
                 0.0,
-        bscntlogi:
+        longitude:
             double.tryParse(element.findElements('bscntlogi').first.text) ??
                 0.0,
-        dNcat: element.findElements('dNcat').first.text,
-        dCobc: element.findElements('dCobc').first.text,
-        dLotes: element.findElements('dLotes').first.text,
+        category: element.findElements('dNcat').first.text,
+        observation: element.findElements('dCobc').first.text,
+        lots: element.findElements('dLotes').first.text,
       );
     }).toList();
   }
 
-  List<Ruta> parseRutas(String responseBody) {
+  List<RouteModel> parseRoutes(String responseBody) {
     final document = xml.XmlDocument.parse(responseBody);
     final tables = document.findAllElements('Table');
     return tables.map((element) {
-      return Ruta(
-        bsrutnrut:
-            int.tryParse(element.findElements('bsrutnrut').first.text) ?? 0,
-        bsrutdesc: element.findElements('bsrutdesc').first.text,
-        bsrutabrv: element.findElements('bsrutabrv').first.text,
-        bsruttipo:
-            int.tryParse(element.findElements('bsruttipo').first.text) ?? 0,
-        bsrutnzon:
+      return RouteModel(
+        number: int.tryParse(element.findElements('bsrutnrut').first.text) ?? 0,
+        description: element.findElements('bsrutdesc').first.text,
+        abbreviation: element.findElements('bsrutabrv').first.text,
+        type: int.tryParse(element.findElements('bsruttipo').first.text) ?? 0,
+        zoneNumber:
             int.tryParse(element.findElements('bsrutnzon').first.text) ?? 0,
-        bsrutfcor: element.findElements('bsrutfcor').first.text,
-        bsrutcper:
-            int.tryParse(element.findElements('bsrutcper').first.text) ?? 0,
-        bsrutstat:
-            int.tryParse(element.findElements('bsrutstat').first.text) ?? 0,
-        bsrutride:
-            int.tryParse(element.findElements('bsrutride').first.text) ?? 0,
-        dNomb: element.findElements('dNomb').first.text,
-        GbzonNzon:
-            int.tryParse(element.findElements('GbzonNzon').first.text) ?? 0,
-        dNzon: element.findElements('dNzon').first.text,
+        date: element.findElements('bsrutfcor').first.text,
+        period: int.tryParse(element.findElements('bsrutcper').first.text) ?? 0,
+        status: int.tryParse(element.findElements('bsrutstat').first.text) ?? 0,
+        ride: int.tryParse(element.findElements('bsrutride').first.text) ?? 0,
+        name: element.findElements('dNomb').first.text,
+        zone: int.tryParse(element.findElements('GbzonNzon').first.text) ?? 0,
+        zoneName: element.findElements('dNzon').first.text,
       );
     }).toList();
   }
-}
-
-class Ruta {
-  final int bsrutnrut;
-  final String bsrutdesc;
-  final String bsrutabrv;
-  final int bsruttipo;
-  final int bsrutnzon;
-  final String bsrutfcor;
-  final int bsrutcper;
-  final int bsrutstat;
-  final int bsrutride;
-  final String dNomb;
-  final int GbzonNzon;
-  final String dNzon;
-
-  Ruta({
-    required this.bsrutnrut,
-    required this.bsrutdesc,
-    required this.bsrutabrv,
-    required this.bsruttipo,
-    required this.bsrutnzon,
-    required this.bsrutfcor,
-    required this.bsrutcper,
-    required this.bsrutstat,
-    required this.bsrutride,
-    required this.dNomb,
-    required this.GbzonNzon,
-    required this.dNzon,
-  });
-}
-
-class Corte {
-  final int bscocNcoc;
-  final int bscntCodf;
-  final int bscocNcnt;
-  final String dNomb;
-  final int bscocNmor;
-  final double bscocImor;
-  final String bsmednser;
-  final String bsmedNume;
-  final double bscntlati;
-  final double bscntlogi;
-  final String dNcat;
-  final String dCobc;
-  final String dLotes;
-
-  Corte({
-    required this.bscocNcoc,
-    required this.bscntCodf,
-    required this.bscocNcnt,
-    required this.dNomb,
-    required this.bscocNmor,
-    required this.bscocImor,
-    required this.bsmednser,
-    required this.bsmedNume,
-    required this.bscntlati,
-    required this.bscntlogi,
-    required this.dNcat,
-    required this.dCobc,
-    required this.dLotes,
-  });
 }

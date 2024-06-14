@@ -1,5 +1,7 @@
 import 'package:flutter/material.dart';
-import 'screens/lista_de_cortes_screen.dart';
+import 'package:provider/provider.dart';
+import 'package:sig/views/main_screen.dart';
+import 'viewmodels/corte_viewmodel.dart';
 
 void main() {
   runApp(MyApp());
@@ -8,8 +10,15 @@ void main() {
 class MyApp extends StatelessWidget {
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      home: ListaDeCortes(),
+    return ChangeNotifierProvider(
+      create: (context) => CorteViewModel(),
+      child: MaterialApp(
+        theme: ThemeData(
+            primarySwatch: Colors.blue,
+            visualDensity: VisualDensity.adaptivePlatformDensity,
+            brightness: Brightness.dark),
+        home: MainScreen(),
+      ),
     );
   }
 }
